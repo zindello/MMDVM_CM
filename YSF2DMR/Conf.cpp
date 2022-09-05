@@ -86,6 +86,7 @@ m_dmrNetworkDebug(false),
 m_dmrNetworkJitterEnabled(true),
 m_dmrNetworkJitter(500U),
 m_dmrNetworkEnableUnlink(true),
+m_dmrNetworkIgnoreUnlinkResponse(true),
 m_dmrNetworkIDUnlink(4000U),
 m_dmrNetworkPCUnlink(false),
 m_dmrIdLookupFile(),
@@ -275,6 +276,8 @@ bool CConf::read()
 		else if (::strcmp(key, "Jitter") == 0)
 			m_dmrNetworkJitter = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "EnableUnlink") == 0)
+			m_dmrNetworkEnableUnlink = ::atoi(value) == 1;
+		else if (::strcmp(key, "IgnoreUnlinkResponse") == 0)
 			m_dmrNetworkEnableUnlink = ::atoi(value) == 1;
 		else if (::strcmp(key, "TGUnlink") == 0)
 			m_dmrNetworkIDUnlink = (unsigned int)::atoi(value);
@@ -594,6 +597,11 @@ unsigned int CConf::getDMRNetworkJitter() const
 bool CConf::getDMRNetworkEnableUnlink() const
 {
 	return m_dmrNetworkEnableUnlink;
+}
+
+bool CConf::getDMRNetworkIgnoreUnlinkResponse() const
+{
+	return m_dmrNetworkIgnoreUnlinkResponse;
 }
 
 unsigned int CConf::getDMRNetworkIDUnlink() const

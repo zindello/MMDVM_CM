@@ -339,6 +339,7 @@ int CYSF2DMR::run()
 	LogMessage("Starting YSF2DMR-%s", VERSION);
 
 	bool enableUnlink = m_conf.getDMRNetworkEnableUnlink();
+	bool ignoreUnlinkResponse = m_conf.getDMRNetworkIgnoreUnlinkResponse();
 	bool unlinkReceived = false;
 
 	TG_STATUS TG_connect_state = NONE;
@@ -458,7 +459,13 @@ int CYSF2DMR::run()
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
 
-								unlinkReceived = false;
+								if (ignoreUnlinkResponse) {
+									LogMessage("Ignoring unlink response");
+									unlinkReceived = true;
+								} else {
+									LogMessage("Waiting for disconnect");
+									unlinkReceived = false;
+								}
 								TG_connect_state = WAITING_UNLINK;
 							} else 
 								TG_connect_state = SEND_REPLY;
@@ -541,7 +548,13 @@ int CYSF2DMR::run()
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
 							
-								unlinkReceived = false;
+								if (ignoreUnlinkResponse) {
+									LogMessage("Ignoring Unlink Response");
+									unlinkReceived = true;
+								} else {
+									LogMessage("Waiting for Disconnect");
+									unlinkReceived = false;
+								}
 								TG_connect_state = WAITING_UNLINK;
 							} else
 								TG_connect_state = SEND_REPLY;
@@ -803,7 +816,7 @@ int CYSF2DMR::run()
 
 					LogMessage("DMR received end of voice transmission, %.1f seconds", float(m_dmrFrames) / 16.667F);
 
-					if (SrcId == 4000)
+					if (SrcId == m_idUnlink)
 						unlinkReceived = true;
 
 					m_conv.putDMREOT();

@@ -83,6 +83,7 @@ public:
   bool         getDMRNetworkJitterEnabled() const;
   unsigned int getDMRNetworkJitter() const;
   bool         getDMRNetworkEnableUnlink() const;
+  bool         getDMRNetworkIgnoreUnlinkResponse() const;
   unsigned int getDMRNetworkIDUnlink() const;
   bool         getDMRNetworkPCUnlink() const;
   std::string  getDMRTGListFile() const;
@@ -158,6 +159,7 @@ private:
   bool         m_dmrNetworkJitterEnabled;
   unsigned int m_dmrNetworkJitter;
   bool         m_dmrNetworkEnableUnlink;
+  bool         m_dmrNetworkIgnoreUnlinkResponse;
   unsigned int m_dmrNetworkIDUnlink;
   bool         m_dmrNetworkPCUnlink;
   std::string  m_dmrTGListFile;
