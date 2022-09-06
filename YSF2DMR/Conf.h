@@ -149,6 +149,9 @@ private:
   std::string  m_dmrXLXModule;
   unsigned int m_dmrXLXReflector;
   unsigned int m_dmrDstId;
+  unsigned int m_dmrStartupDstSlot;
+  bool         m_dmrStartupDstLinkViaOptions;
+  unsigned int m_dmrStartupDstRelinkTimeout;
   bool         m_dmrPC;
   std::string  m_dmrNetworkAddress;
   unsigned int m_dmrNetworkPort;

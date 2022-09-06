@@ -76,6 +76,9 @@ m_dmrXLXFile(),
 m_dmrXLXModule(),
 m_dmrXLXReflector(950U),
 m_dmrDstId(9990U),
+m_dmrStartupDstSlot(2U),
+m_dmrStartupDstLinkViaOptions(false),
+m_dmrStartupDstRelinkTimeout(900U),
 m_dmrPC(true),
 m_dmrNetworkAddress(),
 m_dmrNetworkPort(0U),
@@ -257,6 +260,12 @@ bool CConf::read()
 			m_dmrXLXReflector = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "StartupDstId") == 0)
 			m_dmrDstId = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "StartupDstSlot") == 0)
+			m_dmrStartupDstSlot = (unsigned int)::atoi(value);
+		else if (::strcmp(key, "StartupDstLinkViaOptions") == 0)
+			m_dmrStartupDstLinkViaOptions = ::atoi(value) == 1;			
+		else if (::strcmp(key, "StartupDstRelinkTimeout") == 0)
+			m_dmrStartupDstRelinkTimeout = (unsigned int)::atoi(value);
 		else if (::strcmp(key, "StartupPC") == 0)
 			m_dmrPC = ::atoi(value) == 1;
 		else if (::strcmp(key, "Address") == 0)
@@ -507,6 +516,21 @@ unsigned int CConf::getDMRXLXReflector() const
 unsigned int CConf::getDMRDstId() const
 {
 	return m_dmrDstId;
+}
+
+unsigned int CConf::getDMRStartupDstSlot() const
+{
+	return m_dmrStartupDstSlot;
+}
+
+bool CConf::getDMRStartupDstLinkViaOptions() const
+{
+	return m_dmrStartupDstLinkViaOptions;
+}
+
+unsigned int CConf::getDMRStartupDstRelinkTimeout() const
+{
+	return m_dmrStartupDstRelinkTimeout;
 }
 
 bool CConf::getDMRPC() const
