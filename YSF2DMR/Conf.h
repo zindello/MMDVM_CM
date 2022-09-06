@@ -73,6 +73,9 @@ public:
   std::string  getDMRXLXModule() const;
   unsigned int getDMRXLXReflector() const;
   unsigned int getDMRDstId() const;
+  unsigned int getDMRStartupDstSlot() const;
+  bool         getDMRStartupDstLinkViaOptions() const;
+  unsigned int getDMRStartupDstRelinkTimeout() const;
   bool         getDMRPC() const;
   std::string  getDMRNetworkAddress() const;
   unsigned int getDMRNetworkPort() const;
