@@ -1388,15 +1388,15 @@ bool CYSF2DMR::createDMRNetwork()
 
 	if (!options.empty() || startupDstLink) {
 		LogMessage("    We have options OR a request to link the startup group via the options so let's configure them");
-		if (!options.empty() && (options.find("S1") != std::string::npos || options.find("S2") != std::string::npos )) {
+		if (!options.empty() && (options.find("TS1") != std::string::npos || options.find("TS2") != std::string::npos )) {
 			LogMessage("     Found a static TG in the options, ignore linking of startup TG via options");
 			m_dmrNetwork->setOptions(options);
 		} else if (startupDstLink) {
 			LogMessage("     Found a request to link static TG from config, TGs are not configured in the options, build the options");
 			if (options.empty()) {
-				options = "TS" + std::to_string(startupDstSlot) + "_" + std::to_string(startupDstId);
+				options = "TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
 			} else {
-				options = options + ";TS" + std::to_string(startupDstSlot) + "_" + std::to_string(startupDstId);
+				options = options + ";TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
 			}
 			LogMessage("    Sending Options: %s", options.c_str());
 			m_dmrNetwork->setOptions(options);
