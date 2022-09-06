@@ -12,3 +12,8 @@ $(CLEANDIRS):
 	$(MAKE) -C $(@:clean-%=%) clean
 
 .PHONY: $(SUBDIRS) $(CLEANDIRS)
+
+install-restart:
+	systemctl ysf2dmr stop
+	cp YSF2DMR /usr/local/sbin
+	systemctl ysf2dmr start

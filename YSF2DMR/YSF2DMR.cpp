@@ -1204,12 +1204,12 @@ void CYSF2DMR::SendOptions(std::string type)
 	int startupDstId = m_conf.getDMRDstId();
 
 	if ( type == "startup" || type == "relink" ) {
-		if (!options.empty() || startupDstLink) {
+		if (startupDstLink) {
 			LogMessage("    We have options OR a request to link the startup group via the options so let's configure them");
 			if (!options.empty() && (options.find("TS1") != std::string::npos || options.find("TS2") != std::string::npos )) {
 				LogMessage("     Found a static TG in the options, ignore linking of startup TG via options");
 				m_dmrNetwork->setOptions(options);
-			} else if (startupDstLink) {
+			} else {
 				LogMessage("     Found a request to link static TG from config, TGs are not configured in the options, build the options");
 				if (options.empty()) {
 					options = "TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
@@ -1219,7 +1219,10 @@ void CYSF2DMR::SendOptions(std::string type)
 				LogMessage("Sending Options: %s", options.c_str());
 				m_dmrNetwork->setOptions(options);
 			}
+		} else if (!options.empty()) {
+			m_dmrNetwork->setOptions(options);
 		}
+
 	} else if ( type == "unlink" ) {
 		LogMessage("Received request to send unlink options");
 		options = "TS1_1=" + std::to_string(m_idUnlink) + ";TS2_1=" + std::to_string(m_idUnlink);
