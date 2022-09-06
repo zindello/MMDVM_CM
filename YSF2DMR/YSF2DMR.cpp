@@ -1216,17 +1216,21 @@ void CYSF2DMR::SendOptions(std::string type)
 				} else {
 					options = options + ";TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
 				}
-				LogMessage("    Sending Options: %s", options.c_str());
+				LogMessage("Sending Options: %s", options.c_str());
 				m_dmrNetwork->setOptions(options);
 			}
 		}
 	} else if ( type == "unlink" ) {
+		LogMessage("Received request to send unlink options")
 		options = "TS1_1=" + std::to_string(m_idUnlink) + ";TS2_1=" + std::to_string(m_idUnlink);
+		LogMessage("Sending Options: %s", options.c_str());
 		m_dmrNetwork->setOptions(options);
+
 		m_dmrNetwork->writeOptions();
 	} 
 	
 	if ( type == "relink" ) {
+		LogMessage("Sending Options: %s", options.c_str());
 		m_dmrNetwork->writeOptions();
 	}
 }
