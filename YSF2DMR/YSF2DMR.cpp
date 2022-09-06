@@ -461,7 +461,7 @@ int CYSF2DMR::run()
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
 								
-								if (startupDstLink && m_ptt_dstid == startupDstId) {
+								if (startupDstLink) {
 									LogMessage("We have a static TG configured. Send unlink via Options command as well for good measure");
 									SendOptions("unlink");
 								}
@@ -554,7 +554,7 @@ int CYSF2DMR::run()
 								LogMessage("Sending DMR Disconnect: Src: %s Dst: %s%d", m_ysfSrc.c_str(), m_flcoUnlink == FLCO_GROUP ? "TG " : "", m_idUnlink);
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
-								if (startupDstLink && m_ptt_dstid == startupDstId) {
+								if (startupDstLink) {
 									LogMessage("We have a static TG configured. Send unlink via Options command as well for good measure");
 									SendOptions("unlink");
 								}
