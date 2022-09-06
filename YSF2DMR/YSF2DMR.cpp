@@ -349,7 +349,7 @@ int CYSF2DMR::run()
 
 	while (!m_dmrNetwork->isConnected()) {
 		LogMessage("Waiting for DMR Network to connect");
-		usleep(500);
+		usleep(500); 
 	}
 
 	LogMessage("Connected to DMR, Sending PTT: Src: %s Dst: %s%d", m_ysfSrc.c_str(), m_ptt_pc ? "" : "TG ", m_ptt_dstid);
