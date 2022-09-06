@@ -1221,7 +1221,7 @@ void CYSF2DMR::SendOptions(std::string type)
 			}
 		}
 	} else if ( type == "unlink" ) {
-		LogMessage("Received request to send unlink options")
+		LogMessage("Received request to send unlink options");
 		options = "TS1_1=" + std::to_string(m_idUnlink) + ";TS2_1=" + std::to_string(m_idUnlink);
 		LogMessage("Sending Options: %s", options.c_str());
 		m_dmrNetwork->setOptions(options);
