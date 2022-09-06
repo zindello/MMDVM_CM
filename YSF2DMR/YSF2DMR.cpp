@@ -340,6 +340,8 @@ int CYSF2DMR::run()
 
 	bool enableUnlink = m_conf.getDMRNetworkEnableUnlink();
 	bool ignoreUnlinkResponse = m_conf.getDMRNetworkIgnoreUnlinkResponse();
+	bool startupDstLink = m_conf.getDMRStartupDstLinkViaOptions();
+	int startupDstId = m_conf.getDMRDstId();
 	bool unlinkReceived = false;
 
 	TG_STATUS TG_connect_state = NONE;
@@ -458,6 +460,11 @@ int CYSF2DMR::run()
 								LogMessage("Sending DMR Disconnect: Src: %s Dst: %s%d", m_ysfSrc.c_str(), m_flcoUnlink == FLCO_GROUP ? "TG " : "", m_idUnlink);
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
+								
+								if (startupDstLink && m_ptt_dstid == startupDstId) {
+									LogMessage("We have a static TG configured. Send unlink via Options command as well for good measure");
+									SendOptions("unlink");
+								}
 
 								if (ignoreUnlinkResponse) {
 									LogMessage("Ignoring unlink response");
@@ -547,6 +554,10 @@ int CYSF2DMR::run()
 								LogMessage("Sending DMR Disconnect: Src: %s Dst: %s%d", m_ysfSrc.c_str(), m_flcoUnlink == FLCO_GROUP ? "TG " : "", m_idUnlink);
 
 								SendDummyDMR(m_srcid, m_idUnlink, m_flcoUnlink);
+								if (startupDstLink && m_ptt_dstid == startupDstId) {
+									LogMessage("We have a static TG configured. Send unlink via Options command as well for good measure");
+									SendOptions("unlink");
+								}
 							
 								if (ignoreUnlinkResponse) {
 									LogMessage("Ignoring Unlink Response");
@@ -1185,6 +1196,41 @@ void CYSF2DMR::createGPS()
 	}
 }
 
+void CYSF2DMR::SendOptions(std::string type)
+{
+	std::string options = m_conf.getDMRNetworkOptions();
+	bool startupDstLink = m_conf.getDMRStartupDstLinkViaOptions();
+	int startupDstSlot = m_conf.getDMRStartupDstSlot();
+	int startupDstId = m_conf.getDMRDstId();
+
+	if ( type == "startup" || type == "relink" ) {
+		if (!options.empty() || startupDstLink) {
+			LogMessage("    We have options OR a request to link the startup group via the options so let's configure them");
+			if (!options.empty() && (options.find("TS1") != std::string::npos || options.find("TS2") != std::string::npos )) {
+				LogMessage("     Found a static TG in the options, ignore linking of startup TG via options");
+				m_dmrNetwork->setOptions(options);
+			} else if (startupDstLink) {
+				LogMessage("     Found a request to link static TG from config, TGs are not configured in the options, build the options");
+				if (options.empty()) {
+					options = "TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
+				} else {
+					options = options + ";TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
+				}
+				LogMessage("    Sending Options: %s", options.c_str());
+				m_dmrNetwork->setOptions(options);
+			}
+		}
+	} else if ( type == "unlink" ) {
+		options = "TS1_1=" + std::to_string(m_idUnlink) + ";TS2_1=" + std::to_string(m_idUnlink);
+		m_dmrNetwork->setOptions(options);
+		m_dmrNetwork->writeOptions();
+	} 
+	
+	if ( type == "relink" ) {
+		m_dmrNetwork->writeOptions();
+	}
+}
+
 void CYSF2DMR::SendDummyDMR(unsigned int srcid,unsigned int dstid, FLCO dmr_flco)
 {
 	CDMRData dmrdata;
@@ -1381,27 +1427,7 @@ bool CYSF2DMR::createDMRNetwork()
 
 	m_dmrNetwork = new CDMRNetwork(address, port, local, m_srcHS, password, duplex, VERSION, debug, slot1, slot2, hwType, jitter);
 
-	std::string options = m_conf.getDMRNetworkOptions();
-	bool startupDstLink = m_conf.getDMRStartupDstLinkViaOptions();
-	int startupDstSlot = m_conf.getDMRStartupDstSlot();
-	int startupDstId = m_conf.getDMRDstId();
-
-	if (!options.empty() || startupDstLink) {
-		LogMessage("    We have options OR a request to link the startup group via the options so let's configure them");
-		if (!options.empty() && (options.find("TS1") != std::string::npos || options.find("TS2") != std::string::npos )) {
-			LogMessage("     Found a static TG in the options, ignore linking of startup TG via options");
-			m_dmrNetwork->setOptions(options);
-		} else if (startupDstLink) {
-			LogMessage("     Found a request to link static TG from config, TGs are not configured in the options, build the options");
-			if (options.empty()) {
-				options = "TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
-			} else {
-				options = options + ";TS" + std::to_string(startupDstSlot) + "_1=" + std::to_string(startupDstId);
-			}
-			LogMessage("    Sending Options: %s", options.c_str());
-			m_dmrNetwork->setOptions(options);
-		}
-	}
+	SendOptions("startup");
 
 	unsigned int rxFrequency = m_conf.getRxFrequency();
 	unsigned int txFrequency = m_conf.getTxFrequency();

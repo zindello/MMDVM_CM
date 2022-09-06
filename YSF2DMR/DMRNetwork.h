@@ -60,6 +60,8 @@ public:
 
 	void close();
 
+	bool writeOptions();
+
 private: 
 	in_addr         m_address;
 	unsigned int    m_port;
@@ -109,7 +111,6 @@ private:
 
 	bool writeLogin();
 	bool writeAuthorisation();
-	bool writeOptions();
 	bool writeConfig();
 	bool writePing();
 

@@ -112,6 +112,7 @@ private:
 	bool createDMRNetwork();
 	void createGPS();
 	void SendDummyDMR(unsigned int srcid, unsigned int dstid, FLCO dmr_flco);
+	void SendOptions(std::string type);
 	unsigned int findYSFID(std::string cs, bool showdst);
 	std::string getSrcYSF(const unsigned char* source);
 	void writeXLXLink(unsigned int srcId, unsigned int dstId, CDMRNetwork* network);
