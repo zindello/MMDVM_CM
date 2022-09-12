@@ -286,7 +286,7 @@ int CYSF2DMR::run()
 		::LogFinalise();
 		return 1;
 	}
-	
+
 	std::string lookupFile  = m_conf.getDMRIdLookupFile();
 	unsigned int reloadTime = m_conf.getDMRIdLookupTime();
 
@@ -346,14 +346,6 @@ int CYSF2DMR::run()
 	unsigned char gps_buffer[20U];
 
 	unsigned int tglistOpt = 0;
-
-	while (!m_dmrNetwork->isConnected()) {
-		LogMessage("Waiting for DMR Network to connect");
-		usleep(500); 
-	}
-
-	LogMessage("Connected to DMR, Sending PTT: Src: %s Dst: %s%d", m_ysfSrc.c_str(), m_ptt_pc ? "" : "TG ", m_ptt_dstid);
-	SendDummyDMR(m_srcid, reflector, m_ptt_pc ? FLCO_USER_USER : FLCO_GROUP);
 
 	for (; end == 0;) {
 		unsigned char buffer[2000U];
