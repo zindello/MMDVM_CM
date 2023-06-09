@@ -49,7 +49,7 @@ const char* DEFAULT_INI_FILE = "/etc/YSF2DMR.ini";
 const char* HEADER1 = "This software is for use on amateur radio networks only,";
 const char* HEADER2 = "it is to be used for educational purposes only. Its use on";
 const char* HEADER3 = "commercial networks is strictly prohibited.";
-const char* HEADER4 = "Copyright(C) 2018,2019 by CA6JAU, EA7EE, G4KLX and others";
+const char* HEADER4 = "Copyright(C) 2018,2019 by CA6JAU, EA7EE, G4KLX, AD8DP and others";
 
 #include <functional>
 #include <algorithm>
@@ -957,7 +957,7 @@ int CYSF2DMR::run()
 
 				unsigned char csd1[20U], csd2[20U];
 				memset(csd1, '*', YSF_CALLSIGN_LENGTH/2);
- 				memcpy(csd1 + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID(), YSF_CALLSIGN_LENGTH/2);
+ 				memcpy(csd1 + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID().c_str(), YSF_CALLSIGN_LENGTH/2);
 				memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_netSrc.c_str(), YSF_CALLSIGN_LENGTH);
 				memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 
@@ -997,7 +997,7 @@ int CYSF2DMR::run()
 
 				unsigned char csd1[20U], csd2[20U];
 				memset(csd1, '*', YSF_CALLSIGN_LENGTH/2);
- 				memcpy(csd1 + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID(), YSF_CALLSIGN_LENGTH/2);
+ 				memcpy(csd1 + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID().c_str(), YSF_CALLSIGN_LENGTH/2);
 				memcpy(csd1 + YSF_CALLSIGN_LENGTH, m_netSrc.c_str(), YSF_CALLSIGN_LENGTH);
 				memset(csd2, ' ', YSF_CALLSIGN_LENGTH + YSF_CALLSIGN_LENGTH);
 
@@ -1024,25 +1024,33 @@ int CYSF2DMR::run()
 				switch (fn) {
 					case 0:
 						memset(dch, '*', YSF_CALLSIGN_LENGTH/2);
- 						memcpy(dch + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID(), YSF_CALLSIGN_LENGTH/2);
+ 						memcpy(dch + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID().c_str(), YSF_CALLSIGN_LENGTH/2);
  						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, dch);
 						break;
 					case 1:
-						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, (const unsigned char*)m_netSrc.c_str());
+						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, (unsigned char*)m_netSrc.c_str());
 						break;
 					case 2:
-						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, (const unsigned char*)m_netDst.c_str());
+						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, (unsigned char*)m_netDst.c_str());
 						break;
 					case 5:
 						memset(dch, ' ', YSF_CALLSIGN_LENGTH/2);
- 						memcpy(dch + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID(), YSF_CALLSIGN_LENGTH/2);
+ 						memcpy(dch + YSF_CALLSIGN_LENGTH/2, m_conf.getYsfRadioID().c_str(), YSF_CALLSIGN_LENGTH/2);
  						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, dch);	// Rem3/4
  						break;
-					case 6:
-						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, m_conf.getYsfDT1());
+					case 6: {
+							unsigned char dt1[10U] = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U};
+							for (unsigned int i = 0U; i < m_conf.getYsfDT1().size() && i < 10U; i++)
+								dt1[i] = m_conf.getYsfDT1()[i];
+							ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, dt1);
+						}
 						break;
-					case 7:
-						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, m_conf.getYsfDT2());
+					case 7: {
+							unsigned char dt2[10U] = {0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U, 0U};
+							for (unsigned int i = 0U; i < m_conf.getYsfDT2().size() && i < 10U; i++)
+								dt2[i] = m_conf.getYsfDT2()[i];
+							ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, dt2);
+						}
 						break;
 					default:
 						ysfPayload.writeVDMode2Data(m_ysfFrame + 35U, (const unsigned char*)"          ");
