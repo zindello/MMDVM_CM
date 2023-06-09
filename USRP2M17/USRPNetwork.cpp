@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2021 by Doug McLain AD8DP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -26,11 +26,13 @@
 
 CUSRPNetwork::CUSRPNetwork(const std::string& address, uint16_t dstPort, uint16_t localPort, bool debug) :
 m_address(),
-m_port(dstPort),
+m_addrLen(0U),
 m_socket(localPort),
 m_debug(debug)
 {
-	m_address = CUDPSocket::lookup(address);
+	if (CUDPSocket::lookup(address, dstPort, m_address, m_addrLen) != 0)
+		m_addrLen = 0U;
+
 	CStopWatch stopWatch;
 }
 
@@ -41,6 +43,12 @@ CUSRPNetwork::~CUSRPNetwork()
 bool CUSRPNetwork::open()
 {
 	LogMessage("USRP Network, Opening");
+
+	if (m_addrLen == 0U) {
+		LogError("USRP Network, supplied address/port is invalid");
+		return false;
+	}	
+
 	return m_socket.open();
 }
 
@@ -51,15 +59,15 @@ void CUSRPNetwork::close()
 
 uint32_t CUSRPNetwork::readData(uint8_t* data, uint32_t length)
 {
-	in_addr address;
-	unsigned int port;
-	int len = m_socket.read(data, length, address, port);
+	sockaddr_storage address;
+	unsigned int addrLen;
+	int len = m_socket.read(data, length, address, addrLen);
 	if (len <= 0)
 		return 0U;
 
 	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || port != m_port) {
-		LogMessage("USRP packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
+	if (!CUDPSocket::match(m_address, address)) {
+		LogMessage("USRP packet received from an invalid source");
 		return 0U;
 	}
 
@@ -74,5 +82,5 @@ bool CUSRPNetwork::writeData(const uint8_t* data, uint32_t length)
 	if (m_debug)
 		CUtils::dump(1U, "USRP Network Data Sent", data, length);
 
-	return m_socket.write(data, length, m_address, m_port);
+	return m_socket.write(data, length, m_address, m_addrLen);
 }

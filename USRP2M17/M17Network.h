@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2021 by Doug McLain AD8DP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -31,18 +31,22 @@ public:
 	~CM17Network();
 
 	bool open();
+
 	bool writeData(const unsigned char* data, unsigned int length);
 	unsigned int readData(unsigned char* data, unsigned int length);
+
 	bool writePoll();
 	bool writeLink(char m);
 	bool writeUnlink();
+
 	void close();
+
 private:
-	in_addr      m_address;
-	uint16_t     m_port;
-	CUDPSocket   m_socket;
-	bool         m_debug;
-	unsigned char  m_callsign[6];
+	sockaddr_storage m_address;
+	unsigned int     m_addrLen;
+	CUDPSocket       m_socket;
+	bool             m_debug;
+	unsigned char    m_callsign[6U];
 };
 
 #endif

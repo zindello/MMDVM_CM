@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2015,2016,2017 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2015,2016,2017,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2021 by Doug McLain AD8DP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -33,15 +33,18 @@ public:
 	~CUSRPNetwork();
 
 	uint32_t getConfig(uint8_t* config) const;
+
 	bool open();
+
 	bool writeData(const uint8_t* data, uint32_t length);
 	uint32_t readData(uint8_t* data, uint32_t length);
+
 	void close();
 private: 
-	in_addr		m_address;
-	uint16_t	m_port;
-	CUDPSocket	m_socket;
-	bool		m_debug;
+	sockaddr_storage m_address;
+	unsigned int     m_addrLen;
+	CUDPSocket	 m_socket;
+	bool		 m_debug;
 };
 
 #endif

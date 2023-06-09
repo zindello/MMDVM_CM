@@ -1,5 +1,5 @@
 /*
- *   Copyright (C) 2009-2014,2016 by Jonathan Naylor G4KLX
+ *   Copyright (C) 2009-2014,2016,2023 by Jonathan Naylor G4KLX
  *   Copyright (C) 2021 by Doug McLain AD8DP
  *
  *   This program is free software; you can redistribute it and/or modify
@@ -28,12 +28,15 @@
 
 CM17Network::CM17Network(const std::string& address, uint16_t dstPort, uint16_t localPort, uint8_t* callsign, bool debug) :
 m_address(),
-m_port(dstPort),
+m_addrLen(0U),
 m_socket(localPort),
-m_debug(debug)
+m_debug(debug),
+m_callsign()
 {
-	memcpy(m_callsign, callsign, 6);
-	m_address = CUDPSocket::lookup(address);
+	memcpy(m_callsign, callsign, 6U);
+
+	if (CUDPSocket::lookup(address, dstPort, m_address, m_addrLen) != 0U)
+		m_addrLen = 0U;
 }
 
 CM17Network::~CM17Network()
@@ -43,6 +46,11 @@ CM17Network::~CM17Network()
 bool CM17Network::open()
 {
 	LogInfo("Opening M17 network connection");
+
+	if (m_addrLen == 0U) {
+		LogError("M17 Network, supplied address/port is invalid");
+		return false;
+	}	
 
 	return m_socket.open();
 }
@@ -55,47 +63,47 @@ bool CM17Network::writeData(const unsigned char* data, unsigned int length)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Data Sent", data, length);
 
-	return m_socket.write(data, length, m_address, m_port);
+	return m_socket.write(data, length, m_address, m_addrLen);
 }
 
 bool CM17Network::writePoll()
 {
 	unsigned char data[10U];
 	
-	memcpy(data, "PONG", 4);
-	memcpy(data+4, m_callsign, 6);
+	memcpy(data, "PONG", 4U);
+	memcpy(data + 4U, m_callsign, 6U);
 
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Pong Sent", data, 10U);
 
-	return m_socket.write(data, 10U, m_address, m_port);
+	return m_socket.write(data, 10U, m_address, m_addrLen);
 }
 
 bool CM17Network::writeLink(char m)
 {
 	unsigned char data[11U];
 	
-	memcpy(data, "CONN", 4);
-	memcpy(data+4, m_callsign, 6);
+	memcpy(data, "CONN", 4U);
+	memcpy(data+4, m_callsign, 6U);
 	data[10U] = m;
+
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Link Sent", data, 11U);
 
-	//LogInfo("writeLink add:port == %x, %x", m_address.s_addr, m_port);
-	return m_socket.write(data, 11U, m_address, m_port);
+	return m_socket.write(data, 11U, m_address, m_addrLen);
 }
 
 bool CM17Network::writeUnlink()
 {
 	unsigned char data[10U];
 	
-	memcpy(data, "DISC", 4);
-	memcpy(data+4, m_callsign, 6);
+	memcpy(data, "DISC", 4U);
+	memcpy(data + 4U, m_callsign, 6U);
 
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Unlink Sent", data, 10U);
 
-	return m_socket.write(data, 10U, m_address, m_port);
+	return m_socket.write(data, 10U, m_address, m_addrLen);
 }
 
 unsigned int CM17Network::readData(unsigned char* data, unsigned int length)
@@ -103,15 +111,15 @@ unsigned int CM17Network::readData(unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	in_addr address;
-	unsigned int port;
-	int len = m_socket.read(data, length, address, port);
+	sockaddr_storage address;
+	unsigned int addrLen;
+	int len = m_socket.read(data, length, address, addrLen);
 	if (len <= 0)
 		return 0U;
 
 	// Check if the data is for us
-	if (m_address.s_addr != address.s_addr || port != m_port) {
-		LogMessage("M17 packet received from an invalid source, %08X != %08X and/or %u != %u", m_address.s_addr, address.s_addr, m_port, port);
+	if (!CUDPSocket::match(m_address, address)) {
+		LogMessage("M17 packet received from an invalid source");
 		return 0U;
 	}
 
