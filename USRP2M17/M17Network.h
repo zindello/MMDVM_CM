@@ -42,7 +42,7 @@ public:
 	void close();
 
 private:
-	sockaddr_storage m_address;
+	sockaddr_storage m_addr;
 	unsigned int     m_addrLen;
 	CUDPSocket       m_socket;
 	bool             m_debug;

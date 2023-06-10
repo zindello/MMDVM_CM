@@ -27,7 +27,7 @@
 
 
 CM17Network::CM17Network(const std::string& address, uint16_t dstPort, uint16_t localPort, uint8_t* callsign, bool debug) :
-m_address(),
+m_addr(),
 m_addrLen(0U),
 m_socket(localPort),
 m_debug(debug),
@@ -35,7 +35,7 @@ m_callsign()
 {
 	memcpy(m_callsign, callsign, 6U);
 
-	if (CUDPSocket::lookup(address, dstPort, m_address, m_addrLen) != 0U)
+	if (CUDPSocket::lookup(address, dstPort, m_addr, m_addrLen) != 0U)
 		m_addrLen = 0U;
 }
 
@@ -52,7 +52,7 @@ bool CM17Network::open()
 		return false;
 	}	
 
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 bool CM17Network::writeData(const unsigned char* data, unsigned int length)
@@ -63,7 +63,7 @@ bool CM17Network::writeData(const unsigned char* data, unsigned int length)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Data Sent", data, length);
 
-	return m_socket.write(data, length, m_address, m_addrLen);
+	return m_socket.write(data, length, m_addr, m_addrLen);
 }
 
 bool CM17Network::writePoll()
@@ -76,7 +76,7 @@ bool CM17Network::writePoll()
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Pong Sent", data, 10U);
 
-	return m_socket.write(data, 10U, m_address, m_addrLen);
+	return m_socket.write(data, 10U, m_addr, m_addrLen);
 }
 
 bool CM17Network::writeLink(char m)
@@ -90,7 +90,7 @@ bool CM17Network::writeLink(char m)
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Link Sent", data, 11U);
 
-	return m_socket.write(data, 11U, m_address, m_addrLen);
+	return m_socket.write(data, 11U, m_addr, m_addrLen);
 }
 
 bool CM17Network::writeUnlink()
@@ -103,7 +103,7 @@ bool CM17Network::writeUnlink()
 	if (m_debug)
 		CUtils::dump(1U, "M17 Network Unlink Sent", data, 10U);
 
-	return m_socket.write(data, 10U, m_address, m_addrLen);
+	return m_socket.write(data, 10U, m_addr, m_addrLen);
 }
 
 unsigned int CM17Network::readData(unsigned char* data, unsigned int length)
@@ -111,14 +111,14 @@ unsigned int CM17Network::readData(unsigned char* data, unsigned int length)
 	assert(data != NULL);
 	assert(length > 0U);
 
-	sockaddr_storage address;
+	sockaddr_storage addr;
 	unsigned int addrLen;
-	int len = m_socket.read(data, length, address, addrLen);
+	int len = m_socket.read(data, length, addr, addrLen);
 	if (len <= 0)
 		return 0U;
 
 	// Check if the data is for us
-	if (!CUDPSocket::match(m_address, address)) {
+	if (!CUDPSocket::match(m_addr, addr)) {
 		LogMessage("M17 packet received from an invalid source");
 		return 0U;
 	}

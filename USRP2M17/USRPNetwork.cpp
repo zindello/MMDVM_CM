@@ -25,12 +25,12 @@
 #include <cstdio>
 
 CUSRPNetwork::CUSRPNetwork(const std::string& address, uint16_t dstPort, uint16_t localPort, bool debug) :
-m_address(),
+m_addr(),
 m_addrLen(0U),
 m_socket(localPort),
 m_debug(debug)
 {
-	if (CUDPSocket::lookup(address, dstPort, m_address, m_addrLen) != 0)
+	if (CUDPSocket::lookup(address, dstPort, m_addr, m_addrLen) != 0)
 		m_addrLen = 0U;
 
 	CStopWatch stopWatch;
@@ -49,7 +49,7 @@ bool CUSRPNetwork::open()
 		return false;
 	}	
 
-	return m_socket.open();
+	return m_socket.open(m_addr);
 }
 
 void CUSRPNetwork::close()
@@ -59,14 +59,14 @@ void CUSRPNetwork::close()
 
 uint32_t CUSRPNetwork::readData(uint8_t* data, uint32_t length)
 {
-	sockaddr_storage address;
+	sockaddr_storage addr;
 	unsigned int addrLen;
-	int len = m_socket.read(data, length, address, addrLen);
+	int len = m_socket.read(data, length, addr, addrLen);
 	if (len <= 0)
 		return 0U;
 
 	// Check if the data is for us
-	if (!CUDPSocket::match(m_address, address)) {
+	if (!CUDPSocket::match(m_addr, addr)) {
 		LogMessage("USRP packet received from an invalid source");
 		return 0U;
 	}
@@ -82,5 +82,5 @@ bool CUSRPNetwork::writeData(const uint8_t* data, uint32_t length)
 	if (m_debug)
 		CUtils::dump(1U, "USRP Network Data Sent", data, length);
 
-	return m_socket.write(data, length, m_address, m_addrLen);
+	return m_socket.write(data, length, m_addr, m_addrLen);
 }
