@@ -48,15 +48,15 @@ m_enableWiresX(false),
 m_wiresXMakeUpper(true),
 m_fichCallSign(2U),
 m_fichCallMode(0U),
-m_fichFrameTotal(7U),
+m_fichFrameTotal(6U),
 m_fichMessageRoute(0U),
 m_fichVOIP(0U),
-m_fichDataType(2U),
+m_fichDataType(3U),
 m_fichSQLType(0U),
 m_fichSQLCode(0U),
 m_ysfDT1(),
 m_ysfDT2(),
-m_ysfRadioID(),
+m_ysfRadioID("*****"),
 m_daemon(false),
 m_networkDebug(false),
 m_rxFrequency(0U),
@@ -126,7 +126,6 @@ bool CConf::read()
     // Remove quotes from the value
     size_t len = ::strlen(value);
     char *t;
-    unsigned char tokencnt = 0;
     if (len > 1U && *value == '"' && value[len - 1U] == '"') {
       value[len - 1U] = '\0';
       value++;
@@ -163,7 +162,7 @@ bool CConf::read()
 		else if (::strcmp(key, "WiresXMakeUpper") == 0)
 			m_wiresXMakeUpper = ::atoi(value) == 1;
                 else if (::strcmp(key, "RadioID") == 0)
-  			::memcpy(m_ysfRadioID, value, 5);
+			m_ysfRadioID = value;
   		else if (::strcmp(key, "FICHCallsign") == 0)
   			m_fichCallSign = ::atoi(value);
   		else if (::strcmp(key, "FICHCallMode") == 0)
@@ -180,22 +179,13 @@ bool CConf::read()
   			m_fichSQLType = ::atoi(value);
   		else if (::strcmp(key, "FICHSQLCode") == 0)
   			m_fichSQLCode = ::atoi(value);
-  		else if (::strcmp(key, "DT1") == 0){
-  			tokencnt = 0;
-  			while((t = strtok_r(value, ",", &value)) != NULL){
-  				if(tokencnt < 10){
-  					m_ysfDT1[tokencnt++] = atoi(t);
-  				}
-  			}
-  		}
-  		else if (::strcmp(key, "DT2") == 0){
-  			tokencnt = 0;
-  			while((t = strtok_r(value, ",", &value)) != NULL){
-  				if(tokencnt < 10){
-  					m_ysfDT2[tokencnt++] = atoi(t);
-  				}
-  			}
-  		}
+		else if (::strcmp(key, "DT1") == 0){
+ 			while ((t = strtok_r(value, ",", &value)) != NULL)
+				m_ysfDT1.push_back(::atoi(t));
+ 		} else if (::strcmp(key, "DT2") == 0){
+ 			while ((t = strtok_r(value, ",", &value)) != NULL)
+				m_ysfDT2.push_back(::atoi(t));
+ 		}
 		else if (::strcmp(key, "Daemon") == 0)
 			m_daemon = ::atoi(value) == 1;
 		else if (::strcmp(key, "Debug") == 0)
@@ -334,17 +324,17 @@ unsigned char CConf::getFICHSQLCode() const
   	return m_fichSQLCode;
 }
 
-unsigned char* CConf::getYsfDT1()
+std::vector<unsigned char> CConf::getYsfDT1()
 {
   	return m_ysfDT1;
 }
 
-unsigned char* CConf::getYsfDT2()
+std::vector<unsigned char> CConf::getYsfDT2()
 {
   	return m_ysfDT2;
 }
 
-char* CConf::getYsfRadioID()
+std::string CConf::getYsfRadioID()
 {
   	return m_ysfRadioID;
 }
